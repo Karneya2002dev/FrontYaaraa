@@ -1,24 +1,19 @@
 import React, { useState } from 'react';
+import { Mail, Phone, MapPin } from 'lucide-react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
-const CourseRegister = () => {
-  const navigate = useNavigate();
+const Contact = () => {
   const [form, setForm] = useState({
     name: '',
     email: '',
     phone: '',
-    course: '',
+    subject: '',
     message: '',
   });
 
-  const courses = [
-    'Web Development',
-    'React & Node.js',
-    'Mobile App Development',
-    'UI/UX Design',
-    'Python with Django',
-    'Career Guidance',
-  ];
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -27,81 +22,124 @@ const CourseRegister = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('https://backendweb-production-04a7.up.railway.app/api/course-register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+      const res = await fetch(
+        // Use this line if you're using .env:
+        // `${process.env.REACT_APP_API_BASE}/api/contact`,
+        
+        'https://backendweb-production-04a7.up.railway.app/api/contact', // 🔗 LIVE API
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(form),
+        }
+      );
 
       const data = await res.json();
+      console.log('Backend response:', data); // ✅ Debug log
+
       if (data.success) {
-        navigate('/thankyou');
+        toast.success('✅ Message sent successfully!');
+        setForm({ name: '', email: '', phone: '', subject: '', message: '' });
+        setTimeout(() => navigate('/thankyou'), 2000);
       } else {
-        alert('Registration failed. Please try again.');
+        toast.error(data.message || '❌ Failed to send message.');
       }
     } catch (err) {
-      console.error(err);
-      alert('Server error. Please try again later.');
+      console.error('❌ Error:', err);
+      toast.error('Something went wrong. Please try again.');
     }
   };
 
   return (
-    <section className="bg-rose-50 min-h-screen flex items-center justify-center py-12 px-6">
-      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-xl">
-        <h2 className="text-3xl font-bold text-center text-rose-600 mb-6">Course Registration</h2>
-        <form onSubmit={handleSubmit} className="space-y-5">
+    <section className="bg-gradient-to-b from-white to-rose-50 py-20 px-6 md:px-16">
+      <ToastContainer />
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 bg-white rounded-xl shadow-lg p-10">
+        {/* Contact Info */}
+        <div className="flex flex-col justify-center space-y-6">
+          <h2 className="text-4xl font-bold text-rose-700">Contact Us</h2>
+          <p className="text-gray-600 text-base leading-relaxed">
+            We'd love to hear from you. Whether you're curious about services, partnership opportunities, or anything else—we’re ready to answer your questions.
+          </p>
+
+          <div className="space-y-5 text-sm text-gray-700">
+            <div className="flex items-center gap-4">
+              <Mail className="text-rose-500" size={22} />
+              <div>
+                <p className="font-semibold">Email</p>
+                <p>info@yaaraa.in</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <Phone className="text-rose-500" size={22} />
+              <div>
+                <p className="font-semibold">Phone</p>
+                <p>+91-98765 43210</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <MapPin className="text-rose-500" size={22} />
+              <div>
+                <p className="font-semibold">Address</p>
+                <p>Madurai, Tamil Nadu</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input
+              name="name"
+              type="text"
+              required
+              placeholder="Your Name"
+              value={form.name}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-rose-200 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
+            />
+            <input
+              name="email"
+              type="email"
+              required
+              placeholder="Your Email"
+              value={form.email}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-rose-200 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
+            />
+          </div>
           <input
-            type="text"
-            name="name"
-            required
-            placeholder="Full Name"
-            value={form.name}
-            onChange={handleChange}
-            className="w-full border border-pink-200 px-4 py-2 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
-          />
-          <input
-            type="email"
-            name="email"
-            required
-            placeholder="Email"
-            value={form.email}
-            onChange={handleChange}
-            className="w-full border border-pink-200 px-4 py-2 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
-          />
-          <input
-            type="tel"
             name="phone"
-            required
-            placeholder="Phone Number"
+            type="text"
+            placeholder="Phone (Optional)"
             value={form.phone}
             onChange={handleChange}
-            className="w-full border border-pink-200 px-4 py-2 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
+            className="w-full px-4 py-2 border border-rose-200 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
           />
-          <select
-            name="course"
-            required
-            value={form.course}
+          <input
+            name="subject"
+            type="text"
+            placeholder="Subject"
+            value={form.subject}
             onChange={handleChange}
-            className="w-full border border-pink-200 px-4 py-2 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
-          >
-            <option value="">Select a Course</option>
-            {courses.map((course, index) => (
-              <option key={index} value={course}>{course}</option>
-            ))}
-          </select>
+            className="w-full px-4 py-2 border border-rose-200 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
+          />
           <textarea
             name="message"
             rows="4"
-            placeholder="Message (optional)"
+            placeholder="Your Message"
+            required
             value={form.message}
             onChange={handleChange}
-            className="w-full border border-pink-200 px-4 py-2 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
+            className="w-full px-4 py-2 border border-rose-200 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
           />
           <button
             type="submit"
-            className="w-full bg-rose-600 text-white font-semibold py-2 rounded-md hover:bg-rose-700 transition"
+            className="w-full bg-rose-600 text-white py-3 rounded-md hover:bg-rose-700 transition"
           >
-            Register Now
+            Send Message
           </button>
         </form>
       </div>
@@ -109,4 +147,4 @@ const CourseRegister = () => {
   );
 };
 
-export default CourseRegister;
+export default Contact;
