@@ -19,28 +19,34 @@ const Contact = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch('https://backendweb-production-04a7.up.railway.app/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-      const data = await res.json();
-      if (data.success) {
-        toast.success('Message sent successfully!');
-        setForm({ name: '', email: '', phone: '', subject: '', message: '' });
-        setTimeout(() => navigate('/thankyou'), 2000);
-      } else {
-        toast.error('Failed to send message.');
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Something went wrong.');
+  if (form.phone && form.phone.length !== 10) {
+    toast.error('Phone number must be exactly 10 digits.');
+    return;
+  }
+
+  try {
+    const res = await fetch('https://backendweb-production-04a7.up.railway.app/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      toast.success('Message sent successfully!');
+      setForm({ name: '', email: '', phone: '', subject: '', message: '' });
+      setTimeout(() => navigate('/thankyou'), 2000);
+    } else {
+      toast.error('Failed to send message.');
     }
-  };
+  } catch (err) {
+    console.error(err);
+    toast.error('Something went wrong.');
+  }
+};
 
   return (
     <section className="bg-gradient-to-b from-white to-rose-50 py-20 px-6 md:px-16">
@@ -100,14 +106,22 @@ const Contact = () => {
               className="w-full px-4 py-2 border border-rose-200 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
             />
           </div>
-          <input
-            name="phone"
-            type="text"
-            placeholder="Phone (Optional)"
-            value={form.phone}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-rose-200 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
-          />
+         <input
+  name="phone"
+  type="tel"
+  placeholder="Phone (Optional)"
+  value={form.phone}
+  onChange={(e) => {
+    const cleanedValue = e.target.value.replace(/\D/g, ''); // Only digits
+    if (cleanedValue.length <= 10) {
+      setForm({ ...form, phone: cleanedValue });
+    }
+  }}
+  pattern="\d{10}"
+  maxLength={10}
+  className="w-full px-4 py-2 border border-rose-200 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
+/>
+
           <input
             name="subject"
             type="text"
