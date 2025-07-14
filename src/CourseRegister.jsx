@@ -67,7 +67,7 @@ const CourseRegister = () => {
     if (!validateForm()) return;
 
     try {
-      const res = await fetch('http://localhost:5000/api/course-register', {
+      const res = await fetch('https://backendweb-production-04a7.up.railway.app/api/course-register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
