@@ -16,28 +16,60 @@ const Contact = () => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    // Phone: only allow digits, max 10
+    if (name === 'phone') {
+      const cleaned = value.replace(/\D/g, '');
+      if (cleaned.length <= 10) {
+        setForm({ ...form, [name]: cleaned });
+      }
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (form.name.trim().length < 2) {
+      toast.error("Name must be at least 2 characters.");
+      return;
+    }
+
+    if (!emailRegex.test(form.email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    if (form.phone && !/^\d{10}$/.test(form.phone)) {
+      toast.error("Phone number must be exactly 10 digits.");
+      return;
+    }
+
+    if (form.subject.trim().length < 4) {
+      toast.error("Subject must be at least 4 characters.");
+      return;
+    }
+
+    if (form.message.trim().length < 10) {
+      toast.error("Message must be at least 10 characters.");
+      return;
+    }
+
     try {
       const res = await fetch(
-        // Use this line if you're using .env:
-        // `${process.env.REACT_APP_API_BASE}/api/contact`,
-        
-        'https://backendweb-production-04a7.up.railway.app/api/contact', // 🔗 LIVE API
+        'https://backendweb-production-04a7.up.railway.app/api/contact',
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(form),
         }
       );
 
       const data = await res.json();
-      console.log('Backend response:', data); // ✅ Debug log
+      console.log('Backend response:', data);
 
       if (data.success) {
         toast.success('✅ Message sent successfully!');
@@ -95,6 +127,7 @@ const Contact = () => {
               name="name"
               type="text"
               required
+              minLength={2}
               placeholder="Your Name"
               value={form.name}
               onChange={handleChange}
@@ -112,7 +145,9 @@ const Contact = () => {
           </div>
           <input
             name="phone"
-            type="text"
+            type="tel"
+            maxLength={10}
+            pattern="\d{10}"
             placeholder="Phone (Optional)"
             value={form.phone}
             onChange={handleChange}
@@ -121,6 +156,8 @@ const Contact = () => {
           <input
             name="subject"
             type="text"
+            required
+            minLength={4}
             placeholder="Subject"
             value={form.subject}
             onChange={handleChange}
@@ -129,8 +166,9 @@ const Contact = () => {
           <textarea
             name="message"
             rows="4"
-            placeholder="Your Message"
             required
+            minLength={10}
+            placeholder="Your Message"
             value={form.message}
             onChange={handleChange}
             className="w-full px-4 py-2 border border-rose-200 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
