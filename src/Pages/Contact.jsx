@@ -19,34 +19,41 @@ const Contact = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (form.phone && form.phone.length !== 10) {
-    toast.error('Phone number must be exactly 10 digits.');
-    return;
-  }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  try {
-    const res = await fetch('https://backendweb-production-04a7.up.railway.app/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      toast.success('Message sent successfully!');
-      setForm({ name: '', email: '', phone: '', subject: '', message: '' });
-      setTimeout(() => navigate('/thankyou'), 2000);
-    } else {
-      toast.error('Failed to send message.');
+    if (!emailRegex.test(form.email)) {
+      toast.error("Please enter a valid email address.");
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    toast.error('Something went wrong.');
-  }
-};
+
+    if (form.phone && (!/^\d{10}$/.test(form.phone))) {
+      toast.error("Phone number must be exactly 10 digits.");
+      return;
+    }
+
+    try {
+      const res = await fetch('https://backendweb-production-04a7.up.railway.app/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Message sent successfully!');
+        setForm({ name: '', email: '', phone: '', subject: '', message: '' });
+        setTimeout(() => navigate('/thankyou'), 2000);
+      } else {
+        toast.error('Failed to send message.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Something went wrong. Please try again.');
+    }
+  };
 
   return (
     <section className="bg-gradient-to-b from-white to-rose-50 py-20 px-6 md:px-16">
@@ -103,24 +110,27 @@ const Contact = () => {
               placeholder="Your Email"
               value={form.email}
               onChange={handleChange}
+              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+              title="Please enter a valid email address"
               className="w-full px-4 py-2 border border-rose-200 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
             />
           </div>
-         <input
-  name="phone"
-  type="tel"
-  placeholder="Phone (Optional)"
-  value={form.phone}
-  onChange={(e) => {
-    const cleanedValue = e.target.value.replace(/\D/g, ''); // Only digits
-    if (cleanedValue.length <= 10) {
-      setForm({ ...form, phone: cleanedValue });
-    }
-  }}
-  pattern="\d{10}"
-  maxLength={10}
-  className="w-full px-4 py-2 border border-rose-200 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
-/>
+
+          <input
+            name="phone"
+            type="tel"
+            placeholder="Phone (Optional)"
+            value={form.phone}
+            onChange={(e) => {
+              const cleaned = e.target.value.replace(/\D/g, '');
+              if (cleaned.length <= 10) {
+                setForm({ ...form, phone: cleaned });
+              }
+            }}
+            pattern="\d{10}"
+            maxLength={10}
+            className="w-full px-4 py-2 border border-rose-200 rounded-md focus:ring-2 focus:ring-rose-400 outline-none"
+          />
 
           <input
             name="subject"
