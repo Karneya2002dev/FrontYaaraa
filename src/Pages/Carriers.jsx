@@ -14,9 +14,18 @@ const Careers = () => {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
+
     if (name === 'resume') {
-      setForm({ ...form, resume: files[0] });
-      setResumePreview(URL.createObjectURL(files[0]));
+      const file = files[0];
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Resume must be PDF, DOC or DOCX.');
+        return;
+      }
+
+      setForm({ ...form, resume: file });
+      setResumePreview(URL.createObjectURL(file));
     } else {
       setForm({ ...form, [name]: value });
     }
@@ -24,6 +33,29 @@ const Careers = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (form.name.length < 2) {
+      toast.error('Name must be at least 2 characters.');
+      return;
+    }
+
+    if (!emailRegex.test(form.email)) {
+      toast.error('Enter a valid email address.');
+      return;
+    }
+
+    if (!/^\d{10}$/.test(form.phone)) {
+      toast.error('Phone number must be exactly 10 digits.');
+      return;
+    }
+
+    if (!form.resume) {
+      toast.error('Please upload your resume.');
+      return;
+    }
+
     const formData = new FormData();
     Object.keys(form).forEach(key => formData.append(key, form[key]));
 
@@ -66,6 +98,7 @@ const Careers = () => {
               type="text"
               name="name"
               required
+              minLength={2}
               value={form.name}
               onChange={handleChange}
               className="w-full border border-pink-200 px-4 py-2 rounded-lg focus:ring-2 focus:ring-rose-400"
@@ -77,6 +110,8 @@ const Careers = () => {
               type="email"
               name="email"
               required
+              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+              title="Please enter a valid email address"
               value={form.email}
               onChange={handleChange}
               className="w-full border border-pink-200 px-4 py-2 rounded-lg focus:ring-2 focus:ring-rose-400"
@@ -88,8 +123,15 @@ const Careers = () => {
               type="tel"
               name="phone"
               required
+              pattern="\d{10}"
+              maxLength={10}
               value={form.phone}
-              onChange={handleChange}
+              onChange={(e) => {
+                const cleaned = e.target.value.replace(/\D/g, '');
+                if (cleaned.length <= 10) {
+                  setForm({ ...form, phone: cleaned });
+                }
+              }}
               className="w-full border border-pink-200 px-4 py-2 rounded-lg focus:ring-2 focus:ring-rose-400"
             />
           </div>
@@ -120,6 +162,7 @@ const Careers = () => {
               type="file"
               name="resume"
               required
+              accept=".pdf,.doc,.docx"
               onChange={handleChange}
               className="w-full border border-pink-200 px-4 py-2 rounded-lg"
             />
